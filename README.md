@@ -11,8 +11,6 @@ Trang web tỏ tình độc lập một file (`index.html`) được xây dựng
 
 ---
 
-## 🌟 Những Nâng Cấp Đột Phá
-
 1. **Khoảnh khắc va chạm rung động (The Collision Shockwave & Center Flash)**:
    - Hai nhịp tim ECG nhô lên từ đường thẳng và trượt nhanh dần về phía nhau.
    - Khi hai nhịp chạm nhau tại tâm: Lóe lên chớp sáng trắng - hồng ngọc bừng nở cùng vòng sóng xung kích (Shockwave ring) mở rộng ra mép màn hình.
@@ -47,30 +45,6 @@ Trang web tỏ tình độc lập một file (`index.html`) được xây dựng
    - Dòng chốt *"Làm bạn gái anh nhé..."* khi hoàn tất sẽ tỏa ánh kim ấm áp (`final-bloom`).
    - Tự động kích hoạt luồng hạt tim nhỏ lơ lửng dâng lên trời.
    - Câu kết bừng sáng: **"Chỉ cần em gật đầu, Cả thế giới để anh lo!"**
-
----
-
-## 📁 Cấu Trúc Thư Mục
-
-```
-to-tinh-demo/
-├── index.html        # Toàn bộ mã nguồn giao diện, đồ họa Canvas 3D & logic
-├── music.mp3         # Bài nhạc nền cảm xúc
-├── vercel.json       # Tệp cấu hình deploy nhanh lên Vercel
-└── README.md         # Tài liệu dự án
-```
-
----
-
-## 🚀 Hướng Dẫn Sử Dụng & Deploy
-
-### 1. Xem trên máy cá nhân
-Chỉ cần nhấp đúp vào `index.html` để mở bằng bất kỳ trình duyệt hiện đại nào (Chrome, Safari, Edge, Firefox).
-
-### 2. Deploy lên mạng miễn phí (Vercel / Netlify / GitHub Pages)
-- **Vercel**: Kéo thả thư mục chứa `index.html`, `music.mp3`, `vercel.json` vào Vercel Dashboard hoặc dùng lệnh `vercel deploy`.
-- **Netlify**: Kéo thả toàn bộ thư mục vào trang Netlify Drop (app.netlify.com/drop).
-- **GitHub Pages**: Tạo repo GitHub, tải file lên và bật GitHub Pages trong mục Settings -> Pages.
 
 ---
 
