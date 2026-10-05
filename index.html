@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Gửi Em ✨ Một Điều Muốn Nói</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Montserrat:wght@300;400;500&family=Passions+Conflict&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #ffd27d;
+  --gold-glow: rgba(255, 210, 125, 0.45);
+  --rose: #ff4d7a;
+  --cyan: #00f0ff;
+  --text: #fffaf2;
+  --dim: #c5c2d4;
+  --bg-deep: #070714;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-deep);
+  color: var(--text);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  overflow-x: hidden;
+  user-select: none;
+}
+body.lock {
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Background Canvas & Ambient Overlays */
+#stage {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+#aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: 
+    radial-gradient(ellipse 90% 40% at 50% 100%, rgba(255, 60, 120, 0.18), transparent 70%),
+    radial-gradient(ellipse 70% 35% at 30% 95%, rgba(138, 43, 226, 0.16), transparent 60%),
+    radial-gradient(ellipse 70% 30% at 75% 92%, rgba(0, 240, 255, 0.12), transparent 65%);
+  transition: opacity 2.5s ease-out;
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(7, 7, 20, 0.82) 0%, rgba(7, 7, 20, 0.65) 50%, rgba(7, 7, 20, 0.92) 100%);
+  opacity: 0;
+  transition: opacity 1.8s ease;
+}
+
+/* Right Scroll Progress Rail */
+.rail {
+  position: fixed;
+  top: 5vh;
+  right: max(14px, env(safe-area-inset-right) + 10px);
+  width: 3px;
+  height: 90vh;
+  z-index: 20;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+.rail.on { opacity: 1; }
+#prog {
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(180deg, var(--cyan), var(--rose), var(--gold));
+  box-shadow: 0 0 12px var(--gold-glow);
+  border-radius: 999px;
+}
+
+/* Initial "Chạm để bắt đầu" Gate */
+#gate {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: radial-gradient(circle at 50% 50%, #11112b 0%, #070714 80%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4rem;
+  cursor: pointer;
+  transition: opacity 1.1s cubic-bezier(0.4, 0, 0.2, 1), visibility 1.1s;
+}
+#gate.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.gate-heart-box {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gate-heart-box::before {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 77, 122, 0.35) 0%, transparent 70%);
+  animation: pulse-ring 2.2s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
+}
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 0.25; }
+  100% { transform: scale(0.8); opacity: 0.8; }
+}
+
+.gate-heart-svg {
+  width: 64px;
+  height: 64px;
+  filter: drop-shadow(0 0 20px rgba(255, 77, 122, 0.85));
+  animation: heartbeat-anim 1.4s ease-in-out infinite;
+}
+@keyframes heartbeat-anim {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.18); }
+  28% { transform: scale(1.02); }
+  42% { transform: scale(1.12); }
+  60% { transform: scale(1); }
+}
+
+.gate-title {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1.6rem, 4.5vw, 2.3rem);
+  font-weight: 600;
+  color: #ffe6ba;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 24px rgba(255, 210, 125, 0.65), 0 2px 10px rgba(0,0,0,0.8);
+  animation: text-glow 2.5s ease-in-out infinite alternate;
+}
+@keyframes text-glow {
+  from { opacity: 0.85; filter: drop-shadow(0 0 8px rgba(255, 210, 125, 0.4)); }
+  to { opacity: 1; filter: drop-shadow(0 0 20px rgba(255, 210, 125, 0.85)); }
+}
+
+.gate-sub {
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+  opacity: 0.75;
+  text-transform: uppercase;
+}
+
+/* Sections Layout */
+.section {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 12vh 6vw;
+}
+
+/* Hero Section */
+.hero {
+  padding: 0 6vw 10vh;
+}
+.hero-box {
+  margin-top: -5vh;
+  opacity: 0;
+  transform: translateY(15px) scale(0.96);
+  transition: opacity 2s cubic-bezier(0.2, 0.7, 0.3, 1), transform 2s cubic-bezier(0.2, 0.7, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.hero-box.visible {
+  opacity: 1;
+  transform: none;
+}
+
+.hero-title {
+  font-family: 'Passions Conflict', cursive;
+  font-weight: 400;
+  font-size: clamp(4.2rem, 12vw, 7.5rem);
+  line-height: 1.1;
+  margin: 0 0 0.4rem;
+  background: linear-gradient(110deg, #ffd782 0%, #fff7d6 28%, #ff85a2 50%, #ffe9b8 72%, #ffd782 100%);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 35px rgba(255, 215, 130, 0.6)) drop-shadow(0 2px 14px rgba(0,0,0,0.9));
+  animation: shine-sweep 6s linear infinite;
+}
+@keyframes shine-sweep {
+  0% { background-position: 250% center; }
+  100% { background-position: -50% center; }
+}
+
+.hero-sub {
+  margin: 0;
+  font-style: italic;
+  font-size: clamp(1.2rem, 3.2vw, 1.65rem);
+  color: #ffdcb0;
+  text-shadow: 0 0 16px rgba(255, 210, 125, 0.5), 0 2px 8px rgba(0,0,0,0.8);
+  letter-spacing: 0.04em;
+}
+
+/* Scroll Cue Prompt */
+.cue {
+  position: absolute;
+  bottom: 4vh;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+}
+.cue.visible { opacity: 0.85; }
+.cue-mouse {
+  width: 22px;
+  height: 36px;
+  border: 1.5px solid rgba(255, 235, 200, 0.55);
+  border-radius: 999px;
+  position: relative;
+  box-shadow: 0 0 12px rgba(255, 210, 125, 0.25);
+}
+.cue-mouse::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  margin-left: -2px;
+  width: 4px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+  animation: mouse-wheel 1.8s ease-in-out infinite;
+}
+@keyframes mouse-wheel {
+  0% { opacity: 0; transform: translateY(0); }
+  25% { opacity: 1; }
+  75% { opacity: 0.8; transform: translateY(12px); }
+  100% { opacity: 0; transform: translateY(14px); }
+}
+
+/* Letter Section */
+.letter-section {
+  padding: 12vh 6vw 18vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.letter-card {
+  max-width: 44rem;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1rem 0.5rem;
+  position: relative;
+}
+@media (max-width: 640px) {
+  .letter-card {
+    padding: 1rem 0;
+  }
+}
+
+.story-p {
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.4rem, 4vw, 2.15rem);
+  line-height: 2.1;
+  margin: 0 auto 2.2rem auto;
+  text-align: center;
+  width: 100%;
+  color: #ffe6bd;
+  text-shadow: 0 0 28px rgba(255, 215, 140, 0.65), 0 2px 10px rgba(0,0,0,0.9), 0 4px 20px rgba(0,0,0,0.95);
+  text-wrap: balance;
+  text-wrap: pretty;
+}
+.verse-line {
+  display: block;
+  margin: 0.15rem 0;
+}
+.keep-together {
+  display: inline-block;
+  white-space: nowrap;
+}
+.story-p:last-child {
+  margin-bottom: 0;
+  font-weight: 600;
+  color: #ffe6bd;
+  font-size: clamp(1.5rem, 4.4vw, 2.35rem);
+  text-shadow: 0 0 32px rgba(255, 215, 140, 0.75), 0 2px 12px rgba(0,0,0,0.95);
+  transition: all 1.2s ease;
+}
+.story-p:last-child.final-bloom {
+  color: #fff2db;
+  text-shadow: 0 0 42px rgba(255, 215, 140, 0.95), 0 0 20px rgba(255, 110, 150, 0.7), 0 2px 14px rgba(0,0,0,0.98);
+  animation: gold-shimmer-pulse 3.5s ease-in-out infinite alternate;
+}
+@keyframes gold-shimmer-pulse {
+  0% { filter: drop-shadow(0 0 16px rgba(255, 215, 140, 0.6)); }
+  100% { filter: drop-shadow(0 0 32px rgba(255, 215, 140, 0.95)) drop-shadow(0 0 15px rgba(255, 77, 122, 0.5)); }
+}
+
+.word {
+  display: inline-block;
+  margin: 0;
+  opacity: 0;
+  transform: translateY(8px) scale(0.95);
+  transition: opacity 0.4s ease, transform 0.4s ease, text-shadow 0.4s ease;
+  will-change: opacity, transform;
+}
+.word.revealed {
+  opacity: 1;
+  transform: none;
+  text-shadow: 0 0 26px rgba(255, 220, 150, 0.65), 0 2px 10px rgba(0,0,0,0.95);
+}
+.word.glow-pop {
+  text-shadow: 0 0 36px rgba(255, 240, 190, 0.95), 0 0 14px rgba(255, 215, 140, 0.85), 0 2px 8px rgba(0,0,0,0.95);
+}
+
+/* Ending Section - Căn Giữa Trục Thẳng Tuyệt Đối */
+.end-section {
+  min-height: 100vh;
+  padding: 0 6vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.end-gate {
+  opacity: 0;
+  transform: translateY(25px);
+  transition: opacity 1.8s ease, transform 1.8s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  max-width: 48rem;
+  margin: 0 auto;
+}
+.end-gate.unlocked {
+  opacity: 1;
+  transform: none;
+}
+
+.end-title-1 {
+  margin: 0 0 0.55rem 0;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.75rem, 5.2vw, 2.75rem);
+  line-height: 1.35;
+  letter-spacing: 0.03em;
+  text-align: center;
+  width: 100%;
+  background: linear-gradient(110deg, #ffe6ba 0%, #fffbf2 35%, #ffd27d 70%, #ffe6ba 100%);
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 25px rgba(255, 210, 125, 0.65)) drop-shadow(0 2px 8px rgba(0,0,0,0.85));
+  animation: shine-sweep 7s linear infinite;
+}
+
+.end-title-2 {
+  margin: 0;
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(2.25rem, 7.2vw, 4.0rem);
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  text-align: center;
+  width: 100%;
+  background: linear-gradient(110deg, #ff758c 0%, #ffd27d 28%, #fff7d6 50%, #ff85a2 72%, #ffd27d 100%);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 45px rgba(255, 117, 140, 0.85)) drop-shadow(0 0 20px rgba(255, 210, 125, 0.7)) drop-shadow(0 2px 12px rgba(0,0,0,0.95));
+  animation: shine-sweep 6s linear infinite;
+}
+
+@media (max-width: 640px) {
+  .end-gate {
+    padding: 0 4vw;
+  }
+  .end-title-1 {
+    font-size: clamp(1.45rem, 5.0vw, 1.85rem);
+    margin-bottom: 0.35rem;
+  }
+  .end-title-2 {
+    font-size: clamp(1.85rem, 6.4vw, 2.45rem);
+  }
+}
+
+/* Audio Floating Control */
+.music-btn {
+  position: fixed;
+  bottom: max(22px, env(safe-area-inset-bottom) + 16px);
+  right: max(22px, env(safe-area-inset-right) + 16px);
+  z-index: 30;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(18, 18, 40, 0.55);
+  border: 1px solid rgba(255, 220, 150, 0.3);
+  color: var(--text);
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+.music-btn:hover {
+  transform: scale(1.08);
+  border-color: var(--gold);
+}
+.music-btn.playing {
+  animation: music-ring 2.5s ease-in-out infinite;
+}
+@keyframes music-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 210, 125, 0.45); }
+  50% { box-shadow: 0 0 0 10px rgba(255, 210, 125, 0); }
+}
+.music-btn svg { width: 22px; height: 22px; }
+.music-btn .icon-play { display: none; }
+.music-btn.playing .icon-play { display: block; }
+.music-btn.playing .icon-mute { display: none; }
+</style>
+</head>
+<body class="lock">
+
+<canvas id="stage"></canvas>
+<div id="aurora"></div>
+<div class="scrim" id="scrim"></div>
+<div class="rail" id="rail"><div id="prog"></div></div>
+
+<!-- Entry Gate: "Chạm để bắt đầu" -->
+<div id="gate">
+  <div class="gate-heart-box">
+    <svg class="gate-heart-svg" viewBox="0 0 24 24">
+      <path fill="url(#gateHeartGrad)" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+      <defs>
+        <linearGradient id="gateHeartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ff4d7a" />
+          <stop offset="100%" stop-color="#ffd27d" />
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+  <p class="gate-title">Chạm để bắt đầu</p>
+  <small class="gate-sub">Bật âm thanh để nghe trọn vẹn nhé 🎵</small>
+</div>
+
+<!-- Main Sections -->
+<section class="section hero">
+  <div class="hero-box" id="heroBox">
+    <h1 class="hero-title" id="heroTitle">Gửi Em</h1>
+    <p class="hero-sub" id="heroSub">Cuộn xuống để đọc nhé ✨</p>
+  </div>
+  <div class="cue" id="cue">
+    <div class="cue-mouse"></div>
+  </div>
+</section>
+
+<section class="section letter-section" id="letterSection">
+  <div class="letter-card">
+    <div id="storyContent"></div>
+  </div>
+</section>
+
+<section class="section end-section">
+  <div class="end-gate" id="endGate">
+    <h2 class="end-title-1">Chỉ cần em gật đầu,</h2>
+    <h2 class="end-title-2">Cả thế giới để anh lo!</h2>
+  </div>
+</section>
+
+<!-- Floating Audio Control -->
+<button class="music-btn" id="musicBtn" title="Bật/Tắt nhạc nền" aria-label="Bật hoặc tắt nhạc">
+  <!-- Muted / Off Icon -->
+  <svg class="icon-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"></polygon>
+    <line x1="23" y1="9" x2="17" y2="15"></line>
+    <line x1="17" y1="9" x2="23" y2="15"></line>
+  </svg>
+  <!-- Playing Icon -->
+  <svg class="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"></polygon>
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+  </svg>
+</button>
+
+<audio id="audio" loop preload="auto" src="music.mp3"></audio>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   1. CONFIGURATION & STORY CONTENT
+   ═══════════════════════════════════════════════════════════════════ */
+const CONFIG = {
+  heroTitle: "Gửi Em",
+  heroSub: "Cuộn xuống để đọc nhé ✨",
+  story: [
+    [
+      "Anh muốn tiến xa hơn trong mối quan hệ này em biết không",
+      "Anh biết ơn em thật nhiều vì cơ hội này ta yêu"
+    ],
+    [
+      "Với anh mỗi khoảnh khắc bên em thật quý giá",
+      "Em là người đặc biệt anh không muốn đánh mất đâu"
+    ],
+    [
+      "Phần còn lại cứ để anh anh sẽ lo lắng và chăm chút",
+      "Làm tất cả để bảo vệ anh không anh không muốn đánh mất đâu"
+    ],
+    [
+      "Làm bạn gái anh nhé..."
+    ]
+  ]
+};
+
+const $ = id => document.getElementById(id);
+const stage = $('stage');
+const ctx = stage.getContext('2d');
+
+let W = window.innerWidth;
+let H = window.innerHeight;
+let DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+let started = false;
+let unlocked = false;
+let heroShown = false;
+let startTime = 0;
+let T = 0; // Timeline time in seconds
+let bgBright = 1;
+
+/* ═══════════════════════════════════════════════════════════════════
+   2. MATH & EASING HELPERS
+   ═══════════════════════════════════════════════════════════════════ */
+const clamp = (v, min = 0, max = 1) => Math.min(max, Math.max(min, v));
+const easeInOutCubic = p => p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+
+// Standard Heart parametric formula:
+// x = 16 * sin^3(t) / 17
+// y = -(13*cos(t) - 5*cos(2t) - 2*cos(3t) - cos(4t)) / 17 - 0.15
+const heartPoint = t => ({
+  x: Math.pow(Math.sin(t), 3) * 16 / 17,
+  y: -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) / 17 - 0.15
+});
+
+// Uniform Arc-length Heart curve sampling table
+const HEART_CURVE = (() => {
+  const steps = 1000;
+  const pts = [];
+  const cumulative = [0];
+  for (let i = 0; i <= steps; i++) {
+    const pt = heartPoint(i / steps * Math.PI * 2);
+    pts.push(pt);
+    if (i > 0) {
+      cumulative.push(cumulative[i - 1] + Math.hypot(pt.x - pts[i - 1].x, pt.y - pts[i - 1].y));
+    }
+  }
+  const totalLen = cumulative[steps];
+  const sampleAt = u => {
+    u = ((u % 1) + 1) % 1;
+    const targetDist = u * totalLen;
+    let lo = 0, hi = steps;
+    while (hi - lo > 1) {
+      const mid = (lo + hi) >> 1;
+      if (cumulative[mid] < targetDist) lo = mid; else hi = mid;
+    }
+    const ratio = (targetDist - cumulative[lo]) / ((cumulative[hi] - cumulative[lo]) || 1);
+    return {
+      x: pts[lo].x + (pts[hi].x - pts[lo].x) * ratio,
+      y: pts[lo].y + (pts[hi].y - pts[lo].y) * ratio
+    };
+  };
+  sampleAt.totalLen = totalLen;
+  return sampleAt;
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+   3. SPRITE GENERATOR (Soft Glow Points)
+   ═══════════════════════════════════════════════════════════════════ */
+// Palette colors: [R, G, B]
+const PALETTE = [
+  [255, 214, 150], // 0: Warm Golden Amber
+  [255, 45, 85],   // 1: Vivid Rose Red
+  [255, 77, 136],  // 2: Hot Pink / Magenta
+  [0, 240, 255],   // 3: Electric Cyan (ECG)
+  [255, 245, 235], // 4: Warm Celestial White
+  [218, 112, 214], // 5: Orchid Purple
+  [255, 140, 105]  // 6: Warm Coral
+];
+
+const SPRITE_SIZE = 64;
+const sprites = PALETTE.map(([r, g, b]) => {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = SPRITE_SIZE;
+  const sCtx = canvas.getContext('2d');
+  const grad = sCtx.createRadialGradient(SPRITE_SIZE / 2, SPRITE_SIZE / 2, 0, SPRITE_SIZE / 2, SPRITE_SIZE / 2, SPRITE_SIZE / 2);
+  grad.addColorStop(0, `rgba(${Math.min(255, r + 80)}, ${Math.min(255, g + 80)}, ${Math.min(255, b + 80)}, 1)`);
+  grad.addColorStop(0.25, `rgba(${r}, ${g}, ${b}, 0.9)`);
+  grad.addColorStop(0.55, `rgba(${r}, ${g}, ${b}, 0.28)`);
+  grad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+  sCtx.fillStyle = grad;
+  sCtx.fillRect(0, 0, SPRITE_SIZE, SPRITE_SIZE);
+  return canvas;
+});
+
+function drawGlowDot(x, y, radius, alpha, paletteIdx) {
+  if (alpha <= 0.01) return;
+  const sprite = sprites[paletteIdx] || sprites[1];
+  const diam = radius * 2;
+  ctx.globalAlpha = Math.min(1, alpha);
+  ctx.drawImage(sprite, x - radius, y - radius, diam, diam);
+}
+
+// Hàm vẽ ngôi sao 4 cánh lấp lánh (Diamond Flare Star)
+function drawDiamondStar(x, y, radius, alpha, paletteIdx) {
+  if (alpha <= 0.02) return;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.globalAlpha = Math.min(1, alpha);
+  const color = PALETTE[paletteIdx] || PALETTE[0];
+  ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.95)`;
+  ctx.shadowColor = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.85)`;
+  ctx.shadowBlur = radius * 2.2;
+  ctx.beginPath();
+  ctx.moveTo(0, -radius);
+  ctx.quadraticCurveTo(0, 0, radius, 0);
+  ctx.quadraticCurveTo(0, 0, 0, radius);
+  ctx.quadraticCurveTo(0, 0, -radius, 0);
+  ctx.quadraticCurveTo(0, 0, 0, -radius);
+  ctx.fill();
+  ctx.restore();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   4. INTERACTIVE POINTER TRAIL (Vệt Bụi Sao Tiên Tử)
+   ═══════════════════════════════════════════════════════════════════ */
+class PointerTrailSystem {
+  constructor() {
+    this.particles = [];
+  }
+  add(x, y) {
+    if (this.particles.length > 90) return;
+    const count = 2;
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 12 + Math.random() * 28;
+      this.particles.push({
+        x: x + (Math.random() - 0.5) * 10,
+        y: y + (Math.random() - 0.5) * 10,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 15,
+        size: 1.1 + Math.random() * 1.8,
+        alpha: 0.95,
+        decay: 1.3 + Math.random() * 0.7,
+        colorIdx: Math.random() < 0.5 ? 0 : (Math.random() < 0.6 ? 2 : 4)
+      });
+    }
+  }
+  updateAndRender(dt) {
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      const p = this.particles[i];
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.alpha -= p.decay * dt;
+      if (p.alpha <= 0) {
+        this.particles.splice(i, 1);
+      } else {
+        drawGlowDot(p.x, p.y, p.size * 2.4, p.alpha * bgBright, p.colorIdx);
+      }
+    }
+  }
+}
+const pointerTrail = new PointerTrailSystem();
+
+/* ═══════════════════════════════════════════════════════════════════
+   5. COLLISION SHOCKWAVE & FLASH EFFECT (Khoảnh Khắc Va Chạm)
+   ═══════════════════════════════════════════════════════════════════ */
+class CollisionEffect {
+  constructor() {
+    this.triggered = false;
+    this.triggerTime = 0;
+    this.shockwaves = [];
+  }
+  trigger(cx, cy, nowT) {
+    if (this.triggered) return;
+    this.triggered = true;
+    this.triggerTime = nowT;
+    const maxR = Math.min(W, H) * 0.65;
+    this.shockwaves = [
+      { r: 12, maxR: maxR, speed: 520, alpha: 1.0, color: '#ff2b56', width: 2.6 },
+      { r: 8, maxR: maxR * 0.7, speed: 380, alpha: 0.9, color: '#ffd27d', width: 1.6 }
+    ];
+  }
+  render(T, cx, cy, dt) {
+    if (!this.triggered) return;
+    const age = T - this.triggerTime;
+    if (age < 0 || age > 0.85) return;
+
+    // 1. Chớp sáng trắng - hồng ngọc bừng nở tại tâm (Center Flash Glow)
+    const flashProg = clamp(age / 0.45);
+    const flashAlpha = (1 - flashProg) * 1.0 * bgBright;
+    const flashRadius = 30 + flashProg * 120;
+    drawGlowDot(cx, cy, flashRadius, flashAlpha, 1);
+    drawGlowDot(cx, cy, flashRadius * 0.5, flashAlpha * 1.2, 4);
+
+    // 2. Vòng sóng xung kích lan tỏa (Shockwave concentric rings)
+    ctx.save();
+    for (const sw of this.shockwaves) {
+      sw.r += sw.speed * dt;
+      const prog = clamp(sw.r / sw.maxR);
+      sw.alpha = (1 - prog) * bgBright;
+      if (sw.alpha > 0.01) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, sw.r, 0, Math.PI * 2);
+        ctx.strokeStyle = sw.color;
+        ctx.lineWidth = sw.width * (1 - prog * 0.5);
+        ctx.shadowColor = sw.color;
+        ctx.shadowBlur = 16;
+        ctx.globalAlpha = sw.alpha;
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+}
+const collisionEffect = new CollisionEffect();
+
+/* ═══════════════════════════════════════════════════════════════════
+   6. STARFIELD (3 Parallax Star Layers)
+   ═══════════════════════════════════════════════════════════════════ */
+class Starfield {
+  constructor() {
+    this.stars = [];
+    this.init();
+  }
+  init() {
+    const isMobile = W < 640;
+    const count = isMobile ? 180 : 360;
+    this.stars = [];
+    for (let i = 0; i < count; i++) {
+      this.stars.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        baseY: Math.random() * H,
+        size: Math.random() < 0.65 ? (0.7 + Math.random() * 0.9) : (1.6 + Math.random() * 1.8),
+        colorIdx: Math.random() < 0.6 ? 4 : (Math.random() < 0.5 ? 0 : 3),
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.5 + Math.random() * 1.5,
+        depth: 0.15 + Math.random() * 0.85 // For scroll parallax
+      });
+    }
+  }
+  resize() {
+    this.init();
+  }
+  render(time, scrollY) {
+    for (const s of this.stars) {
+      const twinkle = 0.4 + 0.6 * Math.sin(time * s.speed + s.phase);
+      const py = (s.baseY - scrollY * s.depth * 0.4 + H * 10) % H;
+      drawGlowDot(s.x, py, s.size * 2, twinkle * 0.8 * bgBright, s.colorIdx);
+    }
+  }
+}
+const starfield = new Starfield();
+
+/* ═══════════════════════════════════════════════════════════════════
+   7. REALISTIC BEZIER ECG RENDERER (Chuẩn ecg.jpg, Timeline v3)
+   ═══════════════════════════════════════════════════════════════════ */
+class EcgSystem {
+  constructor() {
+    this.shatteredParticles = [];
+    this.hasShattered = false;
+  }
+
+  // Nhịp bên TRÁI: Mô phỏng chuẩn xác ECG DÒNG TRÊN trong ecg.jpg
+  drawBeatLeft(ctx, xc, cy, amp, scale) {
+    const pHeight = 9 * amp * scale;
+    const pWidth = 22 * scale;
+    const qDepth = 6 * amp * scale;
+    const rHeight = 135 * amp * scale; // R vút cực cao
+    const sDepth = 68 * amp * scale;   // S cắm cực sâu (đặc trưng dòng trên)
+    const tHeight = 18 * amp * scale;  // T thấp, thoai thoải
+    const tWidth = 36 * scale;
+
+    const pStart = xc - 50 * scale;
+    const pEnd = pStart + pWidth;
+
+    ctx.lineTo(pStart, cy);
+    ctx.bezierCurveTo(
+      pStart + pWidth * 0.25, cy - pHeight,
+      pStart + pWidth * 0.75, cy - pHeight,
+      pEnd, cy
+    );
+
+    const qX = xc - 6 * scale;
+    ctx.lineTo(qX, cy);
+    const qBottom = xc - 3 * scale;
+    ctx.lineTo(qBottom, cy + qDepth);
+
+    const rPeak = xc;
+    ctx.lineTo(rPeak, cy - rHeight);
+
+    const sBottom = xc + 5 * scale;
+    ctx.lineTo(sBottom, cy + sDepth);
+
+    const stX = xc + 10 * scale;
+    ctx.lineTo(stX, cy);
+    const tStart = xc + 18 * scale;
+    ctx.lineTo(tStart, cy);
+
+    const tEnd = tStart + tWidth;
+    ctx.bezierCurveTo(
+      tStart + tWidth * 0.35, cy - tHeight * 1.05,
+      tStart + tWidth * 0.75, cy - tHeight * 0.85,
+      tEnd, cy
+    );
+
+    const beatEnd = xc + 62 * scale;
+    ctx.lineTo(beatEnd, cy);
+    return beatEnd;
+  }
+
+  // Nhịp bên PHẢI: Mô phỏng chuẩn xác ECG DÒNG DƯỚI trong ecg.jpg
+  drawBeatRight(ctx, xc, cy, amp, scale) {
+    const pHeight = 14 * amp * scale;
+    const pWidth = 24 * scale;
+    const qDepth = 7 * amp * scale;
+    const rHeight = 108 * amp * scale; // R vừa phải
+    const sDepth = 18 * amp * scale;   // S đáy nông
+    const tHeight = 38 * amp * scale;  // T bầu rất cao, tròn trịa, uốn lượn
+    const tWidth = 54 * scale;         // T đuôi dài
+
+    const pStart = xc - 52 * scale;
+    const pEnd = pStart + pWidth;
+
+    ctx.lineTo(pStart, cy);
+    ctx.bezierCurveTo(
+      pStart + pWidth * 0.25, cy - pHeight * 1.05,
+      pStart + pWidth * 0.75, cy - pHeight * 1.05,
+      pEnd, cy
+    );
+
+    const qX = xc - 6 * scale;
+    ctx.lineTo(qX, cy);
+    const qBottom = xc - 3 * scale;
+    ctx.lineTo(qBottom, cy + qDepth);
+
+    const rPeak = xc;
+    ctx.lineTo(rPeak, cy - rHeight);
+
+    const sBottom = xc + 4.5 * scale;
+    ctx.lineTo(sBottom, cy + sDepth);
+
+    const stX = xc + 9 * scale;
+    ctx.lineTo(stX, cy);
+    const tStart = xc + 18 * scale;
+    ctx.lineTo(tStart, cy);
+
+    const tEnd = tStart + tWidth;
+    ctx.bezierCurveTo(
+      tStart + tWidth * 0.32, cy - tHeight * 1.1,
+      tStart + tWidth * 0.70, cy - tHeight * 0.9,
+      tEnd, cy
+    );
+
+    const beatEnd = xc + 80 * scale;
+    ctx.lineTo(beatEnd, cy);
+    return beatEnd;
+  }
+
+  drawEcgWave(T, dt) {
+    // Biến mất hoàn toàn trước T = 2.35s để tránh chồng chéo với tim hội tụ
+    if (T >= 2.35) return;
+
+    const cy = H * 0.5;
+    const scale = clamp(Math.min(W, H * 1.2) / 750, 0.85, 2.2);
+
+    // Giai đoạn 1: Đường thẳng quét từ trái sang phải lúc T = 0.0s -> 0.7s
+    const sweepProgress = clamp(T / 0.7);
+    const maxDrawX = sweepProgress * (W + 60) - 30;
+
+    // Giai đoạn 2: Nhịp tim nhô lên và trượt nhanh dần về giữa lúc T = 0.5s -> 1.75s
+    const p = easeInOutCubic(clamp((T - 0.5) / 1.25));
+    const amp = clamp((T - 0.5) / 0.35);
+
+    // Tính toán tọa độ dừng chuẩn xác để 2 nhịp KHÔNG BAO GIỜ ĐÈ LÊN NHAU
+    // Nhịp A có bề rộng từ (xa - 50*scale) đến (xa + 62*scale)
+    // Nhịp B có bề rộng từ (xb - 52*scale) đến (xb + 80*scale)
+    // Giữ khoảng cách baseline an toàn (centerGap) ở tâm nối giữa 2 nhịp
+    const cx = W * 0.5;
+    const centerGap = 24 * scale; // Khoảng cách baseline ở giữa đi qua tâm
+
+    const targetXa = cx - 62 * scale - centerGap * 0.5;
+    const targetXb = cx + 52 * scale + centerGap * 0.5;
+
+    const startXa = Math.min(W * 0.16, targetXa - 180 * scale);
+    const startXb = Math.max(W * 0.84, targetXb + 180 * scale);
+
+    const xa = startXa + (targetXa - startXa) * p;
+    const xb = startXb + (targetXb - startXb) * p;
+
+    // Thời khắc va chạm chạm nhau tại tâm (T >= 1.72s)
+    if (T >= 1.72) {
+      collisionEffect.trigger(cx, cy, T);
+    }
+
+    // ECG mờ dần từ T = 1.8s đến T = 2.3s
+    const ecgAlpha = clamp(1 - (T - 1.8) / 0.48);
+
+    if (ecgAlpha > 0.01) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(-30, cy);
+
+      const beatAStart = xa - 50 * scale;
+      if (maxDrawX < beatAStart || amp <= 0.01) {
+        ctx.lineTo(Math.min(maxDrawX, W + 30), cy);
+      } else {
+        ctx.lineTo(beatAStart, cy);
+        this.drawBeatLeft(ctx, xa, cy, amp, scale);
+
+        const beatBStart = xb - 52 * scale;
+        if (maxDrawX < beatBStart) {
+          ctx.lineTo(Math.min(maxDrawX, beatBStart), cy);
+        } else {
+          ctx.lineTo(beatBStart, cy);
+          this.drawBeatRight(ctx, xb, cy, amp, scale);
+          ctx.lineTo(Math.min(maxDrawX, W + 30), cy);
+        }
+      }
+
+      // Glowing Neon Red Stroke
+      ctx.strokeStyle = '#ff2b56';
+      ctx.lineWidth = 1.35 * scale;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.shadowColor = 'rgba(255, 43, 86, 0.9)';
+      ctx.shadowBlur = 10 * scale;
+      ctx.globalAlpha = ecgAlpha * bgBright;
+      ctx.stroke();
+
+      // Inner bright highlight core
+      ctx.strokeStyle = '#ffe4ea';
+      ctx.lineWidth = 0.65 * scale;
+      ctx.shadowBlur = 3;
+      ctx.stroke();
+      ctx.restore();
+
+      // Leading glowing head during initial sweep
+      if (sweepProgress < 1.0 && maxDrawX < W) {
+        drawGlowDot(maxDrawX, cy, 14 * scale, 1.0 * ecgAlpha, 1);
+        drawGlowDot(maxDrawX, cy, 6 * scale, 1.0 * ecgAlpha, 4);
+      }
+    }
+
+    // Trigger shatter into stardust at T = 1.8s
+    if (T >= 1.8 && !this.hasShattered) {
+      this.hasShattered = true;
+      const count = 65;
+      for (let i = 0; i < count; i++) {
+        const px = (i / count) * W;
+        this.shatteredParticles.push({
+          x: px,
+          y: cy + (Math.random() - 0.5) * 6,
+          vx: (Math.random() - 0.5) * 45,
+          vy: Math.random() * 32 + 8,
+          size: 0.9 + Math.random() * 2.0,
+          alpha: 0.95,
+          colorIdx: Math.random() < 0.65 ? 1 : (Math.random() < 0.6 ? 2 : 0)
+        });
+      }
+    }
+
+    // Render shattering falling particles
+    if (this.hasShattered && this.shatteredParticles.length > 0) {
+      const renderDt = dt || 0.016;
+      for (let i = this.shatteredParticles.length - 1; i >= 0; i--) {
+        const sp = this.shatteredParticles[i];
+        sp.x += sp.vx * renderDt;
+        sp.y += sp.vy * renderDt;
+        sp.alpha -= renderDt * 1.9; // Quick dissolve in ~0.5s
+        if (sp.alpha <= 0) {
+          this.shatteredParticles.splice(i, 1);
+        } else {
+          drawGlowDot(sp.x, sp.y, sp.size * 2.2, sp.alpha * bgBright, sp.colorIdx);
+        }
+      }
+    }
+  }
+}
+const ecgSystem = new EcgSystem();
+
+/* ═══════════════════════════════════════════════════════════════════
+   8. PARTICLE-BASED GLOWING 3D HEART & SPRING PHYSICS
+   ═══════════════════════════════════════════════════════════════════ */
+let targetTiltX = 0, targetTiltY = 0;
+let currentTiltX = 0, currentTiltY = 0;
+let heartTapBounce = 0;
+
+class HeartParticleSystem {
+  constructor() {
+    this.particles = [];
+    this.coreParticles = [];
+    this.diamondStars = [];
+    this.rings = [];
+    this.sparkles = [];
+    this.init();
+  }
+
+  init() {
+    this.particles = [];
+    this.coreParticles = [];
+    this.diamondStars = [];
+    const isMobile = W < 640;
+    const heartScaleUnit = Math.min(H * 0.22, W * 0.24);
+
+    // 1. Lõi Hồng Ngọc (Inner Core Particles - 60 hạt dày đặc ở tâm)
+    const coreCount = isMobile ? 40 : 65;
+    for (let i = 0; i < coreCount; i++) {
+      const u = Math.random();
+      const pt = HEART_CURVE(u);
+      const lvl = 0.05 + Math.random() * 0.35;
+      const radius = heartScaleUnit * lvl;
+      this.coreParticles.push({
+        targetX: pt.x * radius,
+        targetY: pt.y * radius,
+        x: (Math.random() - 0.5) * 60,
+        y: (Math.random() - 0.5) * 60,
+        vx: 0,
+        vy: 0,
+        size: 1.6 + Math.random() * 2.2,
+        colorIdx: Math.random() < 0.7 ? 1 : 2, // Đỏ ruby & hồng sen
+        alpha: 0,
+        shimmerSpeed: 2.0 + Math.random() * 3.0,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    // 2. Vỏ Tinh Thể (14 concentric levels - 1400 hạt theo lực lò xo)
+    const levels = [1.0, 0.92, 0.84, 0.76, 0.68, 0.60, 0.52, 0.44, 0.36, 0.28, 0.21, 0.15, 0.09, 0.04];
+    levels.forEach((lvl) => {
+      const count = Math.max(8, Math.round(lvl * (isMobile ? 36 : 62)));
+      for (let i = 0; i < count; i++) {
+        const u = i / count;
+        const pt = HEART_CURVE(u);
+        const radius = heartScaleUnit * lvl;
+        const targetX = pt.x * radius;
+        const targetY = pt.y * radius;
+
+        const spawnDist = (isMobile ? 320 : 650) + Math.random() * 220;
+        const spawnAngle = Math.random() * Math.PI * 2;
+
+        this.particles.push({
+          targetX,
+          targetY,
+          x: Math.cos(spawnAngle) * spawnDist,
+          y: Math.sin(spawnAngle) * spawnDist,
+          vx: 0,
+          vy: 0,
+          baseSize: 1.35 + Math.random() * 1.8,
+          alpha: 0,
+          colorIdx: Math.random() < 0.6 ? 1 : (Math.random() < 0.5 ? 2 : 0),
+          springK: 3.4 + Math.random() * 1.6,
+          damping: 0.82 + Math.random() * 0.08,
+          pulseOffset: Math.random() * Math.PI * 2,
+          shimmerSpeed: 1.5 + Math.random() * 2.2,
+          depthZ: (Math.random() - 0.5) * 22 // Chiều sâu 3D
+        });
+      }
+    });
+
+    // 3. Sao Kim Cương (Diamond Flare Stars bám trên viền ngoài)
+    const starCount = isMobile ? 8 : 12;
+    for (let i = 0; i < starCount; i++) {
+      const u = i / starCount;
+      const pt = HEART_CURVE(u);
+      this.diamondStars.push({
+        x: pt.x * heartScaleUnit * 1.01,
+        y: pt.y * heartScaleUnit * 1.01,
+        size: 5 + Math.random() * 4,
+        twinkleSpeed: 2.2 + Math.random() * 2.5,
+        phase: Math.random() * Math.PI * 2,
+        colorIdx: Math.random() < 0.5 ? 4 : 0
+      });
+    }
+
+    // 4. 5 Vành Tinh Vân Đa Sắc (Planetary Rings)
+    const RING_DEFS = [
+      { scale: 1.28, color: 0, delay: 6.0 }, // Vàng hoàng kim
+      { scale: 1.52, color: 2, delay: 6.4 }, // Hồng cánh sen
+      { scale: 1.76, color: 5, delay: 6.8 }, // Tím phong lan
+      { scale: 2.00, color: 6, delay: 7.2 }, // Coral ấm
+      { scale: 2.24, color: 4, delay: 7.6 }  // Trắng ngọc trai
+    ];
+
+    this.rings = RING_DEFS.map(def => {
+      const count = Math.round(def.scale * (isMobile ? 70 : 130));
+      const pts = [];
+      for (let i = 0; i < count; i++) {
+        const u = i / count;
+        const pt = HEART_CURVE(u);
+        pts.push({
+          u,
+          x: pt.x * heartScaleUnit * def.scale,
+          y: pt.y * heartScaleUnit * def.scale,
+          size: 1.5 + Math.random() * 1.2
+        });
+      }
+      return { ...def, pts, count };
+    });
+
+    // 5. Bụi Sao & Lấp Lánh xung quanh
+    this.sparkles = [];
+    const sparkleCount = isMobile ? 120 : 240;
+    for (let i = 0; i < sparkleCount; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = heartScaleUnit * (1.25 + Math.random() * 1.4);
+      this.sparkles.push({
+        x: Math.cos(angle) * dist,
+        y: Math.sin(angle) * dist,
+        vx: Math.cos(angle) * (18 + Math.random() * 42),
+        vy: Math.sin(angle) * (18 + Math.random() * 42),
+        size: 0.9 + Math.random() * 1.6,
+        alpha: 0,
+        colorIdx: Math.random() < 0.45 ? 0 : (Math.random() < 0.4 ? 4 : 2),
+        birthTime: 7.2 + Math.random() * 2.0,
+        duration: 3.5 + Math.random() * 2.0
+      });
+    }
+  }
+
+  resize() {
+    this.init();
+  }
+
+  render(T, cx, cy, dt) {
+    // 3D Parallax tilt interpolation
+    currentTiltX += (targetTiltX - currentTiltX) * 0.08;
+    currentTiltY += (targetTiltY - currentTiltY) * 0.08;
+
+    // Decay tap bounce
+    if (heartTapBounce > 0) {
+      heartTapBounce = Math.max(0, heartTapBounce - dt * 2.5);
+    }
+
+    // 1. Center Pulse ripple lúc T = 1.6s -> 3.2s
+    if (T >= 1.6 && T <= 3.2) {
+      const pTime = T - 1.6;
+      for (let r = 0; r < 3; r++) {
+        const ringProg = ((pTime * 1.4 - r * 0.25) % 1 + 1) % 1;
+        const rRadius = ringProg * 130;
+        const rAlpha = (1 - ringProg) * 0.8 * clamp(1 - (T - 2.8) / 0.4);
+        drawGlowDot(cx, cy, rRadius, rAlpha, 1);
+      }
+      drawGlowDot(cx, cy, 24, 1.0, 1);
+      drawGlowDot(cx, cy, 12, 1.0, 4);
+    }
+
+    // 2. Hội tụ hạt tim bắt đầu từ T = 2.0s
+    if (T >= 2.0) {
+      const gatherFactor = clamp((T - 2.0) / 2.5); // 0 -> 1 hoàn tất lúc 4.5s
+
+      // Double-stroke biological heartbeat (Thình... Thịch) sau T >= 4.5s
+      let beatScale = 1.0;
+      if (T >= 4.5) {
+        const cycle = (T - 4.5) % 0.82; // Chu kỳ ~73 nhịp/phút
+        let pulse = 0;
+        if (cycle < 0.12) {
+          pulse = Math.sin((cycle / 0.12) * Math.PI) * 0.13; // Nhịp 1: Tâm thu mạnh
+        } else if (cycle > 0.18 && cycle < 0.34) {
+          pulse = Math.sin(((cycle - 0.18) / 0.16) * Math.PI) * 0.055; // Nhịp 2: Tâm trương êm
+        }
+        beatScale = 1.0 + pulse + heartTapBounce * 0.12;
+      }
+
+      // Vầng hào quang tỏa sáng phía sau tim (Radial glow halo)
+      if (T >= 3.8) {
+        const haloAlpha = clamp((T - 3.8) / 1.8) * 0.40 * bgBright;
+        const haloRadius = Math.min(W, H) * 0.36 * beatScale;
+        drawGlowDot(cx + currentTiltX * 0.4, cy + currentTiltY * 0.4, haloRadius, haloAlpha, 1);
+        drawGlowDot(cx + currentTiltX * 0.4, cy + currentTiltY * 0.4, haloRadius * 0.58, haloAlpha * 1.25, 2);
+      }
+
+      // Render Lõi Hồng Ngọc (Inner Core)
+      if (T >= 3.0) {
+        const coreAlpha = clamp((T - 3.0) / 1.5) * bgBright;
+        for (const cp of this.coreParticles) {
+          const px = cx + (cp.targetX + currentTiltX * 0.6) * beatScale;
+          const py = cy + (cp.targetY + currentTiltY * 0.6) * beatScale;
+          const shimmer = 0.75 + 0.25 * Math.sin(T * cp.shimmerSpeed + cp.phase);
+          drawGlowDot(px, py, cp.size * 2.8, coreAlpha * shimmer, cp.colorIdx);
+        }
+      }
+
+      // Render Hạt Vỏ Tim (Spring mesh)
+      for (const p of this.particles) {
+        // Tọa độ mục tiêu với 3D Parallax Tilt
+        const tx = (p.targetX + currentTiltX * (1 + p.depthZ * 0.04)) * beatScale;
+        const ty = (p.targetY + currentTiltY * (1 + p.depthZ * 0.04)) * beatScale;
+
+        const ax = -p.springK * (p.x - tx) - p.damping * p.vx;
+        const ay = -p.springK * (p.y - ty) - p.damping * p.vy;
+
+        p.vx += ax * dt * 10;
+        p.vy += ay * dt * 10;
+        p.x += p.vx * dt * 10;
+        p.y += p.vy * dt * 10;
+
+        p.alpha = Math.min(1.0, p.alpha + dt * 1.5);
+        const shimmer = 0.8 + 0.2 * Math.sin(T * p.shimmerSpeed + p.pulseOffset);
+        const finalAlpha = p.alpha * gatherFactor * shimmer * bgBright;
+
+        drawGlowDot(cx + p.x, cy + p.y, p.baseSize * 2.8, finalAlpha, p.colorIdx);
+      }
+
+      // Render Sao Kim Cương (Diamond Flares)
+      if (T >= 4.5) {
+        const flareAlpha = clamp((T - 4.5) / 1.2) * bgBright;
+        for (const star of this.diamondStars) {
+          const sx = cx + (star.x + currentTiltX) * beatScale;
+          const sy = cy + (star.y + currentTiltY) * beatScale;
+          const twinkle = Math.pow(Math.max(0, Math.sin(T * star.twinkleSpeed + star.phase)), 4);
+          if (twinkle > 0.05) {
+            drawDiamondStar(sx, sy, star.size * (1 + twinkle * 0.5), flareAlpha * twinkle, star.colorIdx);
+          }
+        }
+      }
+    }
+
+    // 3. 5 Vành Tinh Vân Đa Sắc (Planetary Rings)
+    for (const ring of this.rings) {
+      if (T < ring.delay) continue;
+      const ringT = clamp((T - ring.delay) / 1.5);
+      const ringEase = easeInOutCubic(ringT);
+
+      let rScaleFactor = 1.0;
+      if (T >= 4.5) {
+        const cycle = (T - 4.5) % 0.82;
+        let pulse = 0;
+        if (cycle < 0.12) pulse = Math.sin((cycle / 0.12) * Math.PI) * 0.04;
+        rScaleFactor = 1.0 + pulse;
+      }
+
+      let leaderPt = null;
+
+      for (const pt of ring.pts) {
+        if (pt.u <= ringEase) {
+          const px = cx + (pt.x + currentTiltX * 0.5) * rScaleFactor;
+          const py = cy + (pt.y + currentTiltY * 0.5) * rScaleFactor;
+
+          const distToHead = ringEase - pt.u;
+          const isNearHead = ringT < 1.0 && distToHead >= 0 && distToHead < 0.06;
+          const ptAlpha = (isNearHead ? 1.0 : 0.85) * bgBright;
+          const ptColor = isNearHead ? 4 : ring.color;
+          const ptRadius = isNearHead ? pt.size * 3.6 : pt.size * 2.2;
+
+          drawGlowDot(px, py, ptRadius, ptAlpha, ptColor);
+
+          if (isNearHead) leaderPt = { x: px, y: py };
+        }
+      }
+
+      if (leaderPt && ringT < 1.0) {
+        drawGlowDot(leaderPt.x, leaderPt.y, 22, 1.0 * bgBright, 4);
+        drawGlowDot(leaderPt.x, leaderPt.y, 36, 0.65 * bgBright, ring.color);
+      }
+    }
+
+    // 4. Bụi Sao & Lấp Lánh bung nở
+    if (T >= 7.2) {
+      for (const sp of this.sparkles) {
+        if (T < sp.birthTime) continue;
+        const spAge = T - sp.birthTime;
+        if (spAge > sp.duration) continue;
+
+        const progress = spAge / sp.duration;
+        const curX = cx + sp.x + sp.vx * progress;
+        const curY = cy + sp.y + sp.vy * progress;
+        const alpha = Math.sin(progress * Math.PI) * 0.9 * bgBright;
+        const twinkle = 0.6 + 0.4 * Math.sin(T * 8 + sp.x);
+
+        drawGlowDot(curX, curY, sp.size * 2.6, alpha * twinkle, sp.colorIdx);
+      }
+    }
+  }
+}
+const heartSystem = new HeartParticleSystem();
+
+/* ═══════════════════════════════════════════════════════════════════
+   9. FLOATING HEARTS & STARDUST FINALE (Không nút bấm)
+   ═══════════════════════════════════════════════════════════════════ */
+class FloatingHeartsSystem {
+  constructor() {
+    this.floaters = [];
+  }
+  spawn() {
+    if (this.floaters.length > 40) return;
+    this.floaters.push({
+      x: W * 0.1 + Math.random() * W * 0.8,
+      y: H + 30,
+      size: 14 + Math.random() * 24,
+      vx: (Math.random() - 0.5) * 22,
+      vy: -(35 + Math.random() * 45),
+      rot: (Math.random() - 0.5) * 0.4,
+      rotSpeed: (Math.random() - 0.5) * 0.8,
+      alpha: 0,
+      colorIdx: Math.random() < 0.6 ? 1 : (Math.random() < 0.5 ? 2 : 0)
+    });
+  }
+  spawnFromHeart(cx, cy) {
+    for (let i = 0; i < 6; i++) {
+      const angle = -Math.PI * 0.5 + (Math.random() - 0.5) * 1.4;
+      const speed = 40 + Math.random() * 50;
+      this.floaters.push({
+        x: cx + (Math.random() - 0.5) * 20,
+        y: cy + (Math.random() - 0.5) * 20,
+        size: 12 + Math.random() * 16,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        rot: 0,
+        rotSpeed: (Math.random() - 0.5) * 1.2,
+        alpha: 0.9,
+        colorIdx: Math.random() < 0.5 ? 0 : 2
+      });
+    }
+  }
+  updateAndRender(dt) {
+    if (Math.random() < 0.08) this.spawn();
+
+    for (let i = this.floaters.length - 1; i >= 0; i--) {
+      const f = this.floaters[i];
+      f.x += f.vx * dt;
+      f.y += f.vy * dt;
+      f.rot += f.rotSpeed * dt;
+
+      if (f.y > H * 0.55) {
+        f.alpha = Math.min(0.85, f.alpha + dt * 0.9);
+      } else {
+        f.alpha -= dt * 0.32;
+      }
+
+      if (f.alpha <= 0 || f.y < -50) {
+        this.floaters.splice(i, 1);
+        continue;
+      }
+
+      drawGlowDot(f.x, f.y, f.size, f.alpha * bgBright, f.colorIdx);
+    }
+  }
+}
+const floatingHearts = new FloatingHeartsSystem();
+
+/* ═══════════════════════════════════════════════════════════════════
+   10. MAIN RENDER LOOP & TIMELINE V3
+   ═══════════════════════════════════════════════════════════════════ */
+let lastFrameTime = performance.now();
+
+function render(now) {
+  requestAnimationFrame(render);
+
+  const dt = Math.min(0.064, (now - lastFrameTime) / 1000);
+  lastFrameTime = now;
+
+  ctx.clearRect(0, 0, W, H);
+
+  const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+
+  // Starfield always renders
+  starfield.render(now * 0.001, scrollY);
+
+  if (!started) return;
+
+  T = (now - startTime) / 1000;
+
+  // Timeline triggers v3 (Golden Timeline)
+  if (T >= 8.2) {
+    // Nền tối chuyển êm dịu lúc T >= 8.2s
+    const dimFactor = clamp((T - 8.2) / 1.2);
+    const scrollProgress = clamp(scrollY / (window.innerHeight * 0.6));
+    const currentScrim = 0.82 * dimFactor + scrollProgress * 0.08;
+    $('scrim').style.opacity = currentScrim.toString();
+  }
+
+  // Tiêu đề "Gửi Em" hiện lên đúng nhịp T = 9.0s
+  if (T >= 9.0 && !heroShown) {
+    heroShown = true;
+    $('heroBox').classList.add('visible');
+  }
+
+  // Mở khóa cuộn trang lúc T = 10.2s
+  if (T >= 10.2 && !unlocked) {
+    unlockExperience();
+  }
+
+  // Độ sáng nền hạ xuống 0.60 đồng nhất
+  const targetBright = (T < 8.2) ? 1.0 : 0.60;
+  bgBright += (targetBright - bgBright) * 0.05;
+
+  const cx = W * 0.5;
+  const cy = H * 0.5;
+
+  ctx.globalCompositeOperation = 'lighter';
+
+  // 1. ECG wave
+  ecgSystem.drawEcgWave(T, dt);
+
+  // 2. Collision Shockwave & Flash
+  collisionEffect.render(T, cx, cy, dt);
+
+  // 3. Heart & Rings Particle System
+  heartSystem.render(T, cx, cy, dt);
+
+  // 4. Interactive Pointer Fairy Dust Trail
+  pointerTrail.updateAndRender(dt);
+
+  // 5. Floating mini hearts when reached end of letter
+  if (unlocked && window.endReached) {
+    floatingHearts.updateAndRender(dt);
+  }
+
+  ctx.globalAlpha = 1.0;
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+function handleResize() {
+  W = window.innerWidth;
+  H = window.innerHeight;
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  stage.width = W * DPR;
+  stage.height = H * DPR;
+  stage.style.width = W + 'px';
+  stage.style.height = H + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+  starfield.resize();
+  heartSystem.resize();
+}
+window.addEventListener('resize', handleResize);
+handleResize();
+requestAnimationFrame(render);
+
+/* ═══════════════════════════════════════════════════════════════════
+   11. INTERACTIVE CONTROLS & POINTER TRACKING
+   ═══════════════════════════════════════════════════════════════════ */
+const audio = $('audio');
+const musicBtn = $('musicBtn');
+const gate = $('gate');
+let isAudioPlaying = false;
+
+function startExperience() {
+  if (started) return;
+  started = true;
+  startTime = performance.now();
+
+  gate.classList.add('hidden');
+  $('aurora').style.opacity = '1';
+
+  audio.play().then(() => {
+    isAudioPlaying = true;
+    musicBtn.classList.add('playing');
+  }).catch(e => {
+    console.log("Audio autoplay prevented", e);
+  });
+}
+
+function unlockExperience() {
+  if (unlocked) return;
+  unlocked = true;
+
+  document.body.classList.remove('lock');
+  $('cue').classList.add('visible');
+  $('rail').classList.add('on');
+  $('heroBox').classList.add('visible');
+  updateScrim();
+}
+
+gate.addEventListener('click', startExperience);
+
+// Mouse & Touch Pointer Listeners (Interactive Trail & 3D Tilt)
+window.addEventListener('pointermove', e => {
+  const px = e.clientX;
+  const py = e.clientY;
+  pointerTrail.add(px, py);
+
+  // 3D Parallax Tilt (-12px to +12px)
+  targetTiltX = ((px / W) - 0.5) * 24;
+  targetTiltY = ((py / H) - 0.5) * 24;
+}, { passive: true });
+
+// Touch/Click directly on the Heart
+window.addEventListener('pointerdown', e => {
+  if (!started || T < 4.5) return;
+  const cx = W * 0.5;
+  const cy = H * 0.5;
+  const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+  const heartRadius = Math.min(H * 0.22, W * 0.24);
+
+  if (dist < heartRadius * 1.2) {
+    heartTapBounce = 1.0;
+    floatingHearts.spawnFromHeart(cx, cy);
+  }
+});
+
+musicBtn.addEventListener('click', () => {
+  if (isAudioPlaying) {
+    audio.pause();
+    musicBtn.classList.remove('playing');
+  } else {
+    audio.play().then(() => {
+      musicBtn.classList.add('playing');
+    }).catch(e => console.log(e));
+  }
+  isAudioPlaying = !isAudioPlaying;
+});
+
+function updateScrim() {
+  if (T < 8.2) return;
+  const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+  const progress = clamp(scrollY / (window.innerHeight * 0.6));
+  $('scrim').style.opacity = (0.82 + progress * 0.08).toString();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   12. STORY LETTER WORD-BY-WORD REVEAL & GENTLE FINALE
+   ═══════════════════════════════════════════════════════════════════ */
+const storyContent = $('storyContent');
+const allWordSpans = [];
+
+CONFIG.story.forEach((item, pIdx) => {
+  const p = document.createElement('p');
+  p.className = 'story-p';
+  if (pIdx === CONFIG.story.length - 1) {
+    p.id = 'finalStoryP';
+  }
+
+  const lines = Array.isArray(item) ? item : [item];
+
+  lines.forEach(lineText => {
+    const lineSpan = document.createElement('span');
+    lineSpan.className = 'verse-line';
+
+    const words = lineText.trim().split(/\s+/);
+    const keepCount = words.length > 3 ? 2 : 1;
+    const normalWords = words.slice(0, words.length - keepCount);
+    const endWords = words.slice(words.length - keepCount);
+
+    normalWords.forEach(w => {
+      const span = document.createElement('span');
+      span.className = 'word';
+      span.textContent = w;
+      lineSpan.appendChild(span);
+      allWordSpans.push(span);
+      lineSpan.appendChild(document.createTextNode(' '));
+    });
+
+    if (endWords.length > 0) {
+      const keepBox = document.createElement('span');
+      keepBox.className = 'keep-together';
+      endWords.forEach((w, idx) => {
+        const span = document.createElement('span');
+        span.className = 'word';
+        span.textContent = w;
+        keepBox.appendChild(span);
+        allWordSpans.push(span);
+        if (idx < endWords.length - 1) {
+          keepBox.appendChild(document.createTextNode('\u00A0'));
+        }
+      });
+      lineSpan.appendChild(keepBox);
+    }
+
+    p.appendChild(lineSpan);
+  });
+
+  storyContent.appendChild(p);
+});
+
+let letterRevealed = false;
+
+function triggerLetterReveal() {
+  if (letterRevealed) return;
+  letterRevealed = true;
+
+  let currentIdx = 0;
+  const interval = setInterval(() => {
+    if (currentIdx >= allWordSpans.length) {
+      clearInterval(interval);
+      window.endReached = true;
+      const finalP = $('finalStoryP');
+      if (finalP) finalP.classList.add('final-bloom');
+      $('endGate').classList.add('unlocked');
+      return;
+    }
+    const currentSpan = allWordSpans[currentIdx++];
+    currentSpan.classList.add('revealed', 'glow-pop');
+    setTimeout(() => {
+      currentSpan.classList.remove('glow-pop');
+    }, 380);
+  }, 82); // 82ms per word
+}
+
+const letterObserver = new IntersectionObserver((entries, obs) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && unlocked) {
+      triggerLetterReveal();
+      obs.disconnect();
+    }
+  });
+}, { threshold: 0.22 });
+
+letterObserver.observe($('letterSection'));
+
+window.addEventListener('scroll', () => {
+  const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+
+  if (maxScroll > 0) {
+    const pct = Math.min(100, (scrollY / maxScroll) * 100);
+    $('prog').style.height = pct + '%';
+  }
+
+  if (scrollY > 40) {
+    $('cue').classList.remove('visible');
+  } else if (unlocked) {
+    $('cue').classList.add('visible');
+  }
+
+  if (unlocked && !letterRevealed) {
+    const rect = $('letterSection').getBoundingClientRect();
+    if (rect.top < window.innerHeight * 0.8) {
+      triggerLetterReveal();
+    }
+  }
+
+  updateScrim();
+}, { passive: true });
+</script>
+</body>
+</html>
